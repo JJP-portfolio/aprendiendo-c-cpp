@@ -1,0 +1,10 @@
+INICIO
+    leer a, b
+    mientras (b != 0)
+        r = a % b
+        a = b
+        b = r
+    fin mientras
+    si (a == 1) → "Son coprimos"
+    sino → "No son coprimos"
+FIN

@@ -1,0 +1,568 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows}
+\pagecolor{black!85!white}
+\color{white}
+
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[section]
+
+\title{Hito 0 - Automatas finitos: enteros positivos}
+\author{Jonathan Javier Pietracci}
+\begin{document}
+
+\maketitle
+
+Creando mi compilador en C;
+
+\section{Lenguaje y alfabeto}
+
+Sea el alfabeto de digitos decimales
+\[
+\Sigma = \{0,1,2,3,4,5,6,7,8,9\}.
+\]
+El lenguaje de los enteros positivos en notación decimal es el conjunto de cadenas sobre $\Sigma$ que cumplen:
+
+\begin{enumerate}
+    \item el primer simbolo es un digito del $1$ al $9$
+    \item los simbolos siguientes pueden ser cualquiera de los $10$ digitos.
+\end{enumerate}
+
+\section{Gramática formal}
+
+\begin{align*}
+    \text{Numero} &\to \text{PrimerDigito} \ \text{Resto} \\
+    \text{Resto} &\to \varepsilon \mid \text{SiguienteDigito} \ \text{Resto} \\
+    \text{PrimerDigito} &\to 1 \mid 2 \mid 3 \mid 4 \mid 5 \mid 6 \mid 7 \mid 8 \mid 9 \\
+    \text{SiguienteDigito} &\to 0 \mid 1 \mid 2 \mid 3 \mid 4 \mid 5 \mid 6 \mid 7 \mid 8 \mid 9 \\
+\end{align*}
+donde $\varepsilon$ denota la cadena vacia.
+
+\section{Autómata finito determinista (AFD)}
+
+\begin{definicion}
+    Un automata finito determinista es una quíntupla
+    $M = (S, I, f, s_0, F)$ donde $S$ es un conjunto finito de estados,
+    $I$ es el alfabeto de entrada, $f : S \times I \to S$ es la función de
+    transición, $s_0 \in S$ es el estado inicial y $F \subseteq S$ es el
+    conjunto de estados de aceptación.
+\end{definicion}
+
+Para nuestro lenguaje:
+\[
+    S = \{q_0, q_1, q_2\} \quad
+    I = \{0,1,2,3,4,5,6,7,8,9\}, \quad
+    s_0 = q_0, \quad
+    F = \{q_1\}
+\]
+La función de transición $f$ es:
+\begin{align*}
+    f(q_0, d) &= q_1 \quad \text{si } d \in \{1,\dots,9\}, \\
+    f(q_0, 0) &= q_2, \\
+    f(q_1, d) &= q_1 \quad \text{para todo } d \in I, \\
+    f(q_2, d) &= q_2 \quad \text{para todo } d \in I \quad \text{(estado de rechazo hundido)}. \\
+\end{align*}
+
+\begin{table}[h]
+\centering
+    \begin{tabular}{c|cccccccccc}
+        \toprule
+        Estado & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+        \midrule
+        $q_0$ (inicial) & $q_2$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ \\
+        $q_1$ (aceptación) & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ & $q_1$ \\
+        $q_2$ (rechaza) & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ & $q_2$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Función de transición $f$. Doble círculo = estado de aceptación.}
+
+\end{table}
+
+\subsection{Diagrama de estados}
+
+\begin{center}
+    \shorthandoff{<>}
+    \begin{tikzpicture}[shorten >=1pt,node distance=2.5cm,on grid,auto,every state/.style={draw,circle,minimum size=1cm}]
+        \node[state,initial]   (q0)               {$q_0$};
+        \node[state,accepting] (q1) [right=of q0] {$q_1$};
+        \node[state]           (q2) [below=of q0] {$q_2$};
+
+        \path[->]
+          (q0) edge [bend left]  node {1..9} (q1)
+          (q0) edge              node [left] {0} (q2)
+          (q1) edge [loop right] node {0..9} (q1)
+          (q2) edge [loop left]  node {0..9} (q2);
+    \end{tikzpicture}
+    \shorthandon{<>}
+\end{center}
+
+\subsection{Verificación por simulación}
+
+Recorremos la cadena símbolo a símbolo usando la transición extendida.
+
+\begin{table}[h]
+
+    \centering
+    
+    \begin{tabular}{c|c|c}
+        \toprule
+        Cadena & Recorrido de estados & Veredicto \\
+        \midrule
+        \texttt{7} & $q_0 \rightarrow {7} q_1$ & acepta \\
+        \texttt{42} & $q_0 \rightarrow {4} q_1 \rightarrow {2} q_1$ & acepta \\
+        \texttt{40} & $q_0 \rightarrow {4} q_1 \rightarrow {0} q_1$ & acepta \\
+        \texttt{102} & $q_0 \rightarrow {1} q_1 \rightarrow {0} q_1 \rightarrow{2} q_1$ & acepta\\
+        \texttt{0} & $q_0 \rightarrow{0} q_2$ & rechaza \\
+        \texttt{007} & $q_0 \rightarrow {0} q_2 \rightarrow {0} q_2 \rightarrow {7} q_2$ & rechaza \\
+        \bottomrule
+    \end{tabular}
+
+    \caption{El AFD reconoce exactamente los enteros positivos sin ceros a la izquierda.}
+
+\end{table}
+
+\section{Gramáticas formales y jerarquía de Chomsky}
+
+Las gramáticas se clasifican en cuatro tipos según la forma de sus reglas:
+
+\begin{enumerate}
+    \item tipo 0: sin restricciones
+    \item tipo 1: sensibles al contexto ($A$ entre símbolos vecinos).
+    \item tipo 2: libres de contexto (un solo símbolo a la izquierda).
+    \item tipo 3: regulares (reconocibles por un autómata finito).
+\end{enumerate}
+
+\section{Teoría de lenguajes formales}
+
+Un lenguaje formal $L$ sobre un alfabeto $\Sigma$ es un conjunto de cadenas de $\Sigma$.
+La cerradura de Kleene $\Sigma^*$ es el conjunto de todas las cadenas sobre $\Sigma$,
+incluyendo la cadena vacía.
+
+Nuestro lenguaje de enteros positivos es un subconjunto propio de
+$\Sigma^*$:
+\[
+    L = \{ w \in \Sigma^* \mid \text{el primer símbolo de } w \text{ es } 1,\dots,9 \}.
+\]
+No coincide con $\Sigma^*$ porque $\Sigma^*$ contiene cadenas como \texttt{0}, \texttt{00}, \texttt{007}, que nuestro AFD rechaza.
+Como $L$ es reconocido por un autómata finito, es un lenguaje regular.
+
+\section{Inducción estructural}
+
+Demostramos por inducción sobre la construcción de las cadenas
+que todo elemento del lenguaje generado por nuestra gramática empieza 
+con un dígito del $1$ al $9$
+
+\begin{proof}
+    \textbf{Caso base.} La cadena más corta se obtiene con
+    $\text{Resto} \to \varepsilon$, lo que da un $\text{PrimerDigito}$,
+    por ejemplo $1$. Esta cadena empieza con $1$, luego cumple la propiedad.
+
+    \textbf{Paso inductivo.} Supongamos que una cadena $w$ cumple la propiedad (empieza con $1$ al $9$).
+    Al aplicar $\text{Resto} \to \text{SiguienteDigito}\ \text{Resto}$ se agrega
+    un dígito $d \in \{0,\dots,9\}$ al final de $w$. Como $d$ se agrega al final,
+    el primer símbolo de $w$ no cambia; por tanto $wd$ también empieza con $1$ al $9$.
+    
+    Por inducción, toda cadena generada por la gramática cumple la propiedad.
+\end{proof}
+
+\section{Árboles y el árbol de sintaxis (AST)}
+
+Un árbol es un grafo conexo y acíclico con un nodo raíz; cada nodo tiene un único
+padre, salvo la raíz. Los nodos sin hijos son las hojas.
+
+En el compilador, una expresión se representa como un árbol de sintaxis abstracta (AST).
+La expresión $1 + 2 \times 3$ se esctructura así:
+
+\begin{center}
+    \shorthandoff{<>}
+    \begin{tikzpicture}[level distance=1.2cm,
+        every node/.style={draw,circle,minimum size=0.8cm}]
+        \node {+}
+            child{ node {1} }
+            child{ node {$\times$}
+                child{ node {2} }
+                child{ node {3} } };
+    \end{tikzpicture}
+    \shorthandon{<>}
+\end{center}
+
+Las hojas son $1, 2, 3$. Al evaluar de las hojas hacia la raíz se
+calcula primero $2 \times 3 = 6$ y luego $1 + 6 = 7$, respetando la precedencia.
+
+\section{Tablas hash y la tabla de símbolos}
+
+\subsection{Función de hash}
+
+Una función de hash es una aplicación
+\[
+    h : U \longrightarrow \{0,1,\dots,m-1\}
+\]
+que asigna a cada clave del universo $U$ (por ejemplo, todas las cadenas posibles) un índice
+en un arreglo de $m$ casillas. La función $h$ se \emph{define}; no es una construcción condicional:
+a cada clave le corresponde un único índice por la fórmula elegida.
+
+\subsection{Principio del palomar}
+
+Si $|U|$ (la cantidad de claves posibles) es infinito y $m$ es finito,
+entonces forzosamente existen al menos dos claves distintas con el mismo
+índice. Esto no es un error de implementación: es consecuencia del principio del palomar
+(si se ponen más palomares que casillas alguna casilla recibe al menos dos). Por tanto,
+las \emph{colisiones} son inevitables y deben \emph{resolverse}, no evitarse.
+
+\subsection{El módulo como herramienta matemática}
+
+Para claves enteras se usa
+\[
+    h(k) = k \bmod m,
+\]
+donde $k \bmod m$ es el resto único de dividir $k$ entre $m$, y por
+definición cumple $0 \le (k \bmod m) < m$. Así el índice siempre
+cae en el rango del arreglo. En la práctica se elige $m$ primo para
+que la distribución no descarte bits (si $m$ fuera potencia de 2, $k \bmod m$
+usaría solo los últimos bits y agruparía claves con patrones similares).
+
+\subsection{Claves que no son enteras}
+
+Si la clave es un \emph{string} (como los identificadores del compilador),
+el módulo no aplica directamente porque opera sobre enteros. Hay que convertir primero
+el string en un entero que dependa de \emph{todos} sus caracteres y de su orden:
+
+\[
+    e = 0;\quad \text{para cada caracter } c:\ e = e \cdot 256 + \text{código}(c)
+\]
+
+Por ejemplo, \texttt{'ab'} (códigos 97 y 98) da $e = 97\cdot 256 + 98 = 24930$. Entonces
+$h(\text{\ttfamily 'ab'} ) = 24930 \bmod m$. La misma cadena produce
+siempre el mismo entero, y por tanto la misma casilla.
+
+\subsection{Resolución de colisiones}
+
+\begin{itemize}
+    \item \textbf{Encadenamiento:} cada casilla contiene una lista enlazada. Si 
+        una segunda clave cae en una casilla ocupada, se agrega
+        a la lista. Pueden guardarse más de $m$ claves (el límite es la memoria).
+    \item \textbf{Direccionamiento abierto:} cada casilla guarda una sola
+        clave. Si la casilla $i$ está ocupada, se prueba $i+1$,
+        $i+2$, \dots\ hasta hallar una libre. A lo sumo caben
+        $m$ claves; la tabla se satura cuando las casillas están llenas.
+\end{itemize}
+
+\begin{center}
+    \shorthandoff{<>}
+    \begin{tikzpicture}[
+        casilla/.style={draw,rectangle,minimum width=2.2cm,minimum height=0.9cm},
+        nodo/.style={draw,rectangle,minimum width=2.2cm,minimum height=0.7cm}]
+        \matrix [row sep=0.25cm] {
+            \node[casilla] (c0) {0}; & \node[nodo] {$k_1$};\\
+            \node[casilla] (c1) {1}; & \node[nodo] {$k_2$}; \node[nodo,right=0.1cm of c1] (n1) {$k_4$}; \\
+            \node[casilla] (c2) {2}; & \\
+            \node[casilla] (c3) {3}; & \node[nodo] {$k_3$}; \node[nodo,right=0.1cm of c3] (n3) {$k_4$}; \\ 
+        };
+        \draw[->] (c1) -- (n1);
+        \draw[->] (c3) -- (n3);
+
+    \end{tikzpicture}
+    \shorthandon{<>}
+
+\end{center}
+
+El dibujo muestra encadenamiento: las casillas 1 y 3 tienen listas enlazadas ($k_5$ cuelga de $k_2$; $k_4$ cuelga de $k_3$).
+
+\subsection{Conexión con el compilador}
+
+La tabla hash será la \emph{tabla de símbolos}: mapea identificadores reconocidos
+por el lexer (Hito 1) a su información. El lexer produce el string, se aplica la conversión a entero
+y el módulo, y se resuelve la colisión con la estrategia elegida.
+
+\section{Binario y Sistema Posicional}
+
+Antes de hablar de "binario", necesitamos entender \texttt{qué es un sistema posicional}. Es una idea poderosa:
+representar cantidades usando \texttt{posiciones} y \texttt{pesos}.
+
+la definición formal dice:
+
+\begin{definicion}
+
+    Un entero en base b se representa como
+    \[
+       N = d_{k-1} \cdot b^{k-1} + d_{k-2} \cdot b^{k-2}
+            + \cdots + d_1 \cdot b^1 + d_0 \cdot b^0
+        \]
+       donde $0 <= d_i < b$ para cada $i$.
+    
+\end{definicion}
+
+\textbf{Ejemplo en base 10:} el número $347_{10}$ se descompone como:
+
+\begin{center}
+    \begin{tabular}{c|ccc}
+    \toprule
+    Posición & 2 & 1 & 0 \\
+    \midrule
+    Dígito $d_i$ & 3 & 4 & 7 \\
+    Peso $b^i$ & $10^2 = 100$ & $10^1 = 10$ & $10^0 = 1$\\
+    \bottomrule
+    \end{tabular}
+\end{center}
+
+\[
+347_{10} = 3 \cdot 100 + 4 \cdot 10 + 7 \cdot 1 = 347
+\]
+
+la base b define: (1) cuántos dígitos posibles hay (del 0 al b-1) 
+y (2) cuánto 'vale' cada posición (potencias de $b$).
+
+\subsection{Binario: base 2}
+
+En base 2 solo existen dos dígitos: \{0, 1\}. Los pesos son potencias de 2:
+
+\begin{center}
+\begin{tabular}{c|cccccc}
+    
+    \toprule
+    Posición & 5 & 4 & 3 & 2 & 1 & 0 \\
+    \midrule
+    Peso $2^i$ & 32 & 16 & 8 & 4 & 2 & 1 \\
+    \bottomrule
+
+\end{tabular}
+\end{center}
+
+Ejemplo: representar $21_{10}$ en binario.
+Se descompone $21 = 16 + 4 + 1$:
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+    \toprule
+    Posición & 4 & 3 & 2 & 1 & 0 \\
+    \midrule
+    Peso $2^i$ & 16 & 8 & 4 & 2 & 1\\
+    Dígito & 1 & 0 & 1 & 0 & 1 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+ \[
+     21_{10} = 10101_{2}
+ \]
+
+\subsection{Conversión decimal a binario}
+
+\begin{definicion}
+    Para convertir un entero positivo n a binario, se aplican divisiones
+    sucesivas por 2. Los restos, leídos de último a primero, forman los dígitos
+    binarios (del LSB al MSB).
+\end{definicion}
+
+Ejemplo: $47_{10}$ a binario.
+
+\begin{center}
+\begin{tabular}{c|c|c}
+    \toprule
+    División & Cociente & Resto \\
+    \midrule
+    $47 \div 2$ & 23 & 1 \\
+    $23 \div 2$ & 11 & 1 \\
+    $11 \div 2$ & 5 & 1 \\
+    $5 \div 2$ & 2 & 1 \\
+    $2 \div 2$ & 1 & 0 \\
+    $2 \div 1$ & 0 & 1 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+Los restos de abajo hacia arriba: $47_{10} = 101111_{2}$.
+
+\subsection{Conversión binario a decimal}
+
+\begin{definicion}
+    Para convertir $d_{k-1} \cdots d_1 d_0$ a decimal, se calcula
+    $\sum_{i=0}^{k-1} d_i \cdot 2^i$.
+\end{definicion}
+
+Ejemplo: $110011_{2}$ a decimal.
+
+\begin{center}
+    \begin{tabular}{c|cccccc}
+        \toprule
+        Posición & 5 & 4 & 3 & 2 & 1 & 0 \\
+        \midrule
+        Dígito & 1 & 1 & 0 & 0 & 1 & 1 \\
+        Peso $2^i$ & 32 & 16 & 8 & 4 & 2 & 1 \\
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+\[
+    32 + 16 + 0 + 0 + 2 + 1 = 51_{10}
+\]
+\subsection{Hexadecimal: base 16}
+
+\begin{definicion}
+    El sistema hexadecimal usa 16 dígitos: $\{0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F\}$.
+    Cada dígito hex equivale a exactamente 4 bits.
+\end{definicion}
+
+\begin{center}
+    \begin{tabular}{c|c|c}
+        \toprule
+        Hex & Binario & Decimal \\
+        \midrule
+        0 & 0000 & 0 \\
+        1 & 0001 & 1 \\
+        2 & 0010 & 2 \\
+        3 & 0011 & 3 \\
+        4 & 0100 & 4 \\
+        5 & 0101 & 5 \\
+        6 & 0110 & 6 \\
+        7 & 0111 & 7 \\
+        8 & 1000 & 8 \\
+        9 & 1001 & 9 \\
+        A & 1010 & 10 \\
+        B & 1011 & 11 \\
+        C & 1100 & 12 \\
+        D & 1101 & 13 \\
+        E & 1110 & 14 \\
+        F & 1111 & 15 \\
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+Binario a hex: separar en nibbles (grupos de 4 bits)
+y reemplazar cada grupo.
+
+$11010101_{2} = \underbrace{1101}_{D}\;\underbrace{0101}_{5} = D5_{16}$
+
+Hex a binario: cada dígito hex -> 4 bits.
+
+$3F_{16} = \underbrace{3}_{0011}\;\underbrace{F}_{1111} = 00111111_{2}$
+
+\subsection{Notación de bases}
+
+Para desambiguar la base de un número se usa subíndice:
+$101_2$ (cinco en binario), $101_{10}$ (ciento uno en decimal).
+
+En C++ se usa prefijo: \texttt{0b101} (binario),
+\texttt{0xD5} (Hexadecimal), \texttt{101} (decimal).
+
+\section{Aritmética binaria}
+
+\subsection{Suma binaria}
+
+La suma binaria sigue las mismas reglas que la suma decimal, con la
+salvedad de que 1 + 1 = 10 (cero con acarreo de 1).
+
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        \toprule
+        $A$ & $B$ & Resultado & Carry \\
+        \midrule
+        0 & 0 & 0 & 0 \\
+        0 & 1 & 1 & 0 \\
+        1 & 0 & 1 & 0 \\
+        1 & 1 & 0 & 1 \\
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+Se suma de derecha a izquierda (LSB $\to$ MSB), propagando el carry.
+Si al final queda un carry, se escribe como bit adicional.
+
+Ejemplo: $1101_{2}$ + $1011_{2}$
+
+\begin{center}
+\begin{tabular}{ccccc}
+    \toprule
+        & 1 & 1 & 1 &  \\
+      + & 1 & 0 & 1 & 1 \\
+        \hline
+    1 & 1 & 0 & 0 & 0 \\
+\end{tabular}
+\end{center}
+
+$13 + 11 = 24 = 11000_{2}$ \checkmark
+
+\subsection{Complemento a 2}
+
+\begin{definicion}
+    El complemento a 2 de un número binario de n bits se obtiene:
+    \begin{enumerate}
+        \item Invertir todos los bits (complemento a 1).
+        \item Sumar 1 al resultado.
+    \end{enumerate}
+    \[
+        -x = \sim x + 1
+    \]
+\end{definicion}
+
+Con $n$ bits, el rango de enteros con signo es
+$[-2^{n-1},\; 2^{n-1} - 1]$.
+
+Ejemplo -5 con 4 bits.
+
+\begin{enumerate}
+    \item 5 = 0101
+    \item Invertir: 1010
+    \item Sumar 1: 1011
+\end{enumerate}
+
+$-5_{10} = 1011_2$ \checkmark
+
+\subsection{Tabla completa de 4 bits}
+
+\begin{center}
+\begin{tabular}{c|c||c|c}
+    \toprule
+    Decimal & Binario & Decimal & Binario \\
+    \midrule
+    0 & 0000 & -1 & 1111 \\
+    1 & 0001 & -2 & 1110 \\
+    2 & 0010 & -3 & 1101 \\
+    3 & 0011 & -4 & 1100 \\
+    4 & 0100 & -5 & 1011 \\
+    5 & 0101 & -6 & 1010 \\
+    6 & 0110 & -7 & 1001 \\
+    7 & 0111 & -8 & 1000 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Resta por suma}
+
+La resta se implementa como suma con el negativo:
+\[
+    A - B = A + (-B)
+\]
+El carry que excede el ancho de bits se descarta. 
+
+Ejemplo: $6 - 4$ con 4 bits.
+$6 = 0110$, $-4 = 1100$ (invertir $0100$ $\to$ $1011$, sumar 1 $\to$ $1100$).
+\[
+    0110 + 1100 = 10010 \to 0010 = 2_{10} \quad \checkmark
+\]
+\subsection{Overflow}
+
+\begin{definicion}
+    Hay overflow signed cuando el carry de entrada al MSB es distinto
+    del carry de salida del MSB. El resultado no cabe en el rango
+    $[-2^{n-1},\; 2^{n-1} - 1]$.
+\end{definicion}
+
+Ejemplo: 7 + 1 = 8 con 4 bits (rango $[-8, 7]$).
+
+$0111 + 0001 = 1000$. El MSB indica negativo (-8), pero la 
+suma real es +8. Hay overflow.
+
+\subsection{Un solo cero}
+
+En complemento a 2, $-0 = 0000_2$ (mismo que $+0$).
+No existe el doble cero, a diferencia del complemento a 1.
+
+\end{document}

@@ -1,0 +1,14 @@
+INICIO                                                         
+     leer a, b                                                    
+     MIENTRAS (b != 0)                                            
+         r = a % b                                                
+         a = b                                                    
+         b = r                                                    
+     FIN MIENTRAS                                                 
+     SI (a == 1) ENTONCES
+        mostrar "Son coprimos"                                 
+     SINO 
+        mostrar "No son coprimos"                                     
+     FIN SI
+FIN
+

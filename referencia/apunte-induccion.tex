@@ -1,0 +1,858 @@
+% =============================================================================
+% apunte-induccion.tex
+% Apunte de Induccion Matematica — UNAHUR, Licenciatura en Informatica
+% Principia Computationis: Fundamentos para la Programacion
+%
+% Compilar con: pdflatex apunte-induccion.tex  (dos pasadas para indice)
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% PREAMBULO
+% -----------------------------------------------------------------------------
+
+% Tipo de documento: article, tamano A4, fuente 11pt.
+% La clase article es la adecuada para un apunte de extension media.
+\documentclass[11pt,a4paper]{article}
+
+% --- Paquetes esenciales -----------------------------------------------
+\usepackage[T1]{fontenc}        % Codificacion de fuentes con caracteres latinos
+\usepackage[utf8]{inputenc}     % Entrada directa de caracteres UTF-8 (tildes, enes)
+\usepackage[spanish]{babel}     % Idioma espanol: rotulos, separacion silabica
+
+% --- Matematicas -------------------------------------------------------
+\usepackage{amsmath}            % Entornos matematicos: align, gather, etc.
+\usepackage{amssymb}            % Simbolos adicionales: \mathbb, \square, etc.
+\usepackage{amsthm}             % Teoremas, definiciones, ejemplos (entornos)
+\usepackage{mathtools}          % Extension de amsmath: \coloneqq, \DeclarePairedDelimiter
+
+% --- Diseno de pagina --------------------------------------------------
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.8cm, right=2.8cm]{geometry}
+\usepackage{fancyhdr}           % Encabezados y pies de pagina personalizados
+\usepackage{multicol}           % Texto en varias columnas (opcional)
+\usepackage{enumitem}           % Control fino sobre listas enumeradas
+
+% --- Graficos y diagramas ----------------------------------------------
+\usepackage{graphicx}           % Insercion de imagenes (aunque no usemos)
+\usepackage{tikz}               % Graficos vectoriales programables (diagramas)
+\usepackage{xcolor}             % Colores para textos, tablas, codigo
+
+% --- Tablas ------------------------------------------------------------
+\usepackage{booktabs}           % Reglas horizontales profesionales: \toprule, \midrule
+\usepackage{array}              % Control avanzado de columnas en tablas
+
+% --- Codigo fuente -----------------------------------------------------
+\usepackage{listings}           % Insercion de codigo fuente con resaltado
+\lstset{
+    language=C++,               % Lenguaje por defecto
+    basicstyle=\ttfamily\small, % Fuente monoespaciada tamano pequenio
+    keywordstyle=\bfseries\color{blue!70!black},
+    commentstyle=\itshape\color{green!50!black},
+    stringstyle=\color{red!70!black},
+    numbers=left,               % Numeros de linea a la izquierda
+    numberstyle=\tiny\color{gray},
+    frame=single,               % Recuadro alrededor del codigo
+    breaklines=true,            % Cortar lineas largas
+    tabsize=4,
+    showstringspaces=false,
+    captionpos=t
+}
+
+% --- Hipervinculos (ultimo paquete en cargarse) ------------------------
+\usepackage[colorlinks=true,
+            linkcolor=blue!50!black,
+            citecolor=green!50!black,
+            urlcolor=blue!50!black,
+            pdfauthor={Estudiante UNAHUR},
+            pdftitle={Apunte de Induccion Matematica}]{hyperref}
+
+% -----------------------------------------------------------------------------
+% ENTORNOS DE TEOREMAS, DEFINICIONES Y EJEMPLOS
+% -----------------------------------------------------------------------------
+% Cada entorno cuenta con su contador ligado a la seccion actual.
+% \theoremstyle{definition} usa texto normal (no italica) para definiciones.
+\theoremstyle{definition}
+\newtheorem{definicion}{Definici\'on}[section]
+
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[section]
+
+\theoremstyle{definition}
+\newtheorem{ejemplo}{Ejemplo}[section]
+
+\theoremstyle{definition}
+\newtheorem{ejercicio}{Ejercicio}[section]
+
+\theoremstyle{remark}
+\newtheorem{observacion}{Observaci\'on}[section]
+
+% -----------------------------------------------------------------------------
+% COMANDOS PERSONALIZADOS
+% -----------------------------------------------------------------------------
+\newcommand{\N}{\mathbb{N}}               % Numeros naturales
+\newcommand{\Z}{\mathbb{Z}}               % Numeros enteros
+\newcommand{\Q}{\mathbb{Q}}               % Numeros racionales
+\newcommand{\R}{\mathbb{R}}               % Numeros reales
+\newcommand{\ind}{{\textit{hip\'otesis inductiva}}}  % Abreviatura para HI
+\newcommand{\implica}{\Rightarrow}         % Implicacion
+\newcommand{\sii}{\Leftrightarrow}         % Si y solo si
+\newcommand{\para}{\forall}               % Cuantificador universal
+\newcommand{\existe}{\exists}             % Cuantificador existencial
+
+% -----------------------------------------------------------------------------
+% ENCABEZADOS Y PIE DE PAGINA
+% -----------------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}  % Limpia estilos anteriores
+\lhead{\textbf{Inducci\'on Matem\'atica}}
+\rhead{UNAHUR --- Licenciatura en Inform\'atica}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% =============================================================================
+% CUERPO DEL DOCUMENTO
+% =============================================================================
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% PORTADA
+% -----------------------------------------------------------------------------
+\title{\Huge \textbf{Apunte de Inducci\'on Matem\'atica} \\[0.3cm]
+       \large \textit{Principia Computationis} --- Fundamentos para la Programaci\'on}
+\author{\textbf{Estudiante UNAHUR} \\[0.2cm]
+        Licenciatura en Inform\'atica \\[0.2cm]
+        Matem\'atica para Inform\'atica I / L\'ogica Computacional}
+\date{\today}
+
+\maketitle
+\thispagestyle{empty}  % La portada no lleva numero de pagina
+\newpage
+
+% -----------------------------------------------------------------------------
+% INDICE
+% -----------------------------------------------------------------------------
+\tableofcontents
+\newpage
+
+% =============================================================================
+% SECCION 1: INTRODUCCION
+% =============================================================================
+\section{Introducci\'on}
+
+La \textbf{inducci\'on matem\'atica} es una t\'ecnica de demostraci\'on fundamental
+en matem\'atica discreta y ciencias de la computaci\'on. Permite probar que una
+propiedad $P(n)$ se cumple para \textbf{todos} los n\'umeros naturales $n \in \N$,
+a partir de dos ingredientes: un \emph{caso base} y un \emph{paso inductivo}.
+
+\subsection*{Analog\'{\i}a de las fichas de domin\'o}
+\label{sec:domino}
+
+Imaginemos una hilera infinita de fichas de domin\'o colocadas en pie, una detr\'as de
+otra. Queremos demostrar que, si empujamos la primera ficha, \textbf{todas} caer\'an.
+Para estar seguros, necesitamos dos condiciones:
+\begin{enumerate}
+    \item La primera ficha cae (caso base).
+    \item Si una ficha cualquiera cae, entonces la siguiente tambi\'en cae
+          (paso inductivo).
+\end{enumerate}
+Si ambas condiciones se cumplen, podemos afirmar que toda la hilera caer\'a.
+Esta es la esencia de la inducci\'on.
+
+\subsection*{Analog\'{\i}a de los bloques numerados}
+
+Otra imagen \'util es la de una escalera infinita de bloques numerados $1, 2, 3,
+\ldots$ Queremos demostrar que podemos pararnos sobre cualquier bloque.
+Si podemos pararnos sobre el bloque $1$, y desde cualquier bloque $k$ podemos
+alcanzar el bloque $k+1$, entonces podemos llegar a cualquier bloque.
+
+\subsection*{Contexto hist\'orico}
+
+La inducci\'on matem\'atica aparece por primera vez de forma expl\'icita en el
+trabajo de \textbf{Francesco Maurolico} (1575), quien la us\'o para demostrar
+resultados sobre n\'umeros poligonales. Sin embargo, el nombre
+\enquote{inducci\'on matem\'atica} fue acu\~nado por \textbf{Augustus De Morgan}
+en 1838. La formalizaci\'on moderna proviene de los \textbf{axiomas de Peano}
+(1889), en particular el axioma P5, que enunciaremos m\'as adelante.
+
+Hoy, la inducci\'on es una herramienta cotidiana tanto en matem\'atica como en
+computaci\'on: los bucles \texttt{for}, la recursi\'on y las demostraciones de
+invariantes de programa se apoyan en el mismo principio l\'ogico.
+
+% =============================================================================
+% SECCION 2: EL PRINCIPIO DE INDUCCION
+% =============================================================================
+\section{El Principio de Inducci\'on Matem\'atica}
+
+El principio de inducci\'on matem\'atica es una regla de inferencia que permite
+demostrar proposiciones de la forma $\para n\in\N\; P(n)$.
+
+\begin{definicion}[Principio de inducci\'on simple]
+\label{def:induccion}
+Sea $P(n)$ una funci\'on proposicional cuyo dominio es $\N$ (o un subconjunto
+$\{n_0, n_0+1, n_0+2,\dots\}$). La demostraci\'on por inducci\'on consta de dos
+pasos:
+\begin{enumerate}
+    \item[\textbf{Paso base:}] Se demuestra que $P(1)$ es verdadera
+          (o $P(n_0)$, seg\'un el valor inicial).
+    \item[\textbf{Paso inductivo:}] Se demuestra que, para todo $k\geq 1$,
+          \[
+          P(k) \;\implica\; P(k+1).
+          \]
+          La suposici\'on $P(k)$ se denomina \textbf{hip\'otesis inductiva}.
+\end{enumerate}
+Si ambos pasos se verifican, entonces $\para n\in\N\; P(n)$ es verdadera.
+\end{definicion}
+
+\subsection*{Regla de inferencia}
+
+En l\'ogica proposicional, el principio de inducci\'on se escribe como:
+\[
+\bigl[\,P(1) \;\wedge\; \para k\;(P(k) \implica P(k+1))\,\bigr]
+\;\implica\; \para n\; P(n).
+\]
+
+\subsection*{Conexi\'on con los axiomas de Peano}
+
+El principio de inducci\'on no es un teorema que se demuestre: es un axioma.
+En la axiomatizaci\'on de Peano de los n\'umeros naturales, la inducci\'on es
+el quinto axioma:
+
+\begin{definicion}[Axioma P5 de Peano]
+\label{def:p5}
+\[
+\para P\subseteq\N:\;
+\bigl[\,P(0) \;\wedge\; \para k\;(P(k) \implica P(\text{S}(k)))\,\bigr]
+\;\implica\; \para n\; P(n)
+\]
+donde $\text{S}(k)$ es la funci\'on sucesor ($\text{S}(k)=k+1$).
+\end{definicion}
+
+Este axioma establece que \enquote{lo que vale para $0$ y se hereda, vale para
+todos}. En computaci\'on, como veremos en la Secci\'on~\ref{sec:programacion},
+P5 es el fundamento l\'ogico del bucle \texttt{for} y de la recursi\'on.
+
+\subsection*{Nota sobre el valor inicial}
+
+Aunque el axioma P5 suele formularse con $P(0)$, en muchos textos de matem\'atica
+discreta (Johnsonbaugh, Rosen) se usa $P(1)$ como caso base, pues los n\'umeros
+naturales se toman como $\{1,2,3,\dots\}$. La elecci\'on es convencional y no
+afecta la esencia del m\'etodo.
+
+% =============================================================================
+% SECCION 3: EJEMPLOS RESUELTOS
+% =============================================================================
+\section{Ejemplos Resueltos}
+
+En esta secci\'on presentamos demostraciones completas, paso a paso, para
+diversas propiedades que se prueban por inducci\'on.
+
+% --- EJEMPLO 1: Suma de 1 a n ---
+\begin{ejemplo}[Suma de los primeros $n$ n\'umeros naturales]
+\label{ej:suma1an}
+Demostrar que para todo $n \geq 1$:
+\[
+1 + 2 + 3 + \cdots + n \;=\; \frac{n(n+1)}{2}.
+\]
+
+\begin{proof}
+Sea $P(n)$ la proposici\'on $1+2+\cdots+n = n(n+1)/2$.
+
+\noindent\textbf{Paso base ($n=1$):}
+\[
+1 = \frac{1\cdot(1+1)}{2} = \frac{2}{2} = 1,
+\]
+por lo que $P(1)$ es verdadera.
+
+\noindent\textbf{Hip\'otesis inductiva:} Supongamos que $P(k)$ es verdadera para alg\'un
+$k \geq 1$, es decir:
+\[
+1 + 2 + \cdots + k = \frac{k(k+1)}{2}.
+\]
+
+\noindent\textbf{Paso inductivo ($k \to k+1$):} Demostremos $P(k+1)$:
+\[
+1 + 2 + \cdots + k + (k+1).
+\]
+Por hip\'otesis inductiva, los primeros $k$ sumandos suman $k(k+1)/2$, luego:
+\[
+\begin{aligned}
+1 + 2 + \cdots + k + (k+1)
+&= \frac{k(k+1)}{2} + (k+1) \\
+&= \frac{k(k+1) + 2(k+1)}{2} \\
+&= \frac{(k+1)(k+2)}{2} \\
+&= \frac{(k+1)\bigl((k+1)+1\bigr)}{2}.
+\end{aligned}
+\]
+Esto es exactamente $P(k+1)$. Hemos demostrado $P(k) \implica P(k+1)$.
+
+\noindent Por el principio de inducci\'on, $P(n)$ es verdadera para todo $n\geq 1$.
+\qed
+\end{proof}
+\end{ejemplo}
+
+% --- EJEMPLO 2: Suma de n(n+2) ---
+\begin{ejemplo}[Suma de productos $n(n+2)$]
+\label{ej:sumann2}
+Demostrar que para todo $n \geq 1$:
+\[
+1\cdot 3 + 2\cdot 4 + 3\cdot 5 + \cdots + n(n+2) \;=\;
+\frac{n(n+1)(2n+7)}{6}.
+\]
+
+\begin{proof}
+Sea $P(n)$ la igualdad anterior.
+
+\noindent\textbf{Paso base ($n=1$):}
+\[
+1\cdot 3 = 3, \qquad
+\frac{1\cdot 2 \cdot (2+7)}{6} = \frac{18}{6} = 3.
+\]
+Se cumple $P(1)$.
+
+\noindent\textbf{Hip\'otesis inductiva:} Para alg\'un $k\geq 1$,
+\[
+\sum_{i=1}^{k} i(i+2) = \frac{k(k+1)(2k+7)}{6}.
+\]
+
+\noindent\textbf{Paso inductivo ($k\to k+1$):}
+\[
+\begin{aligned}
+\sum_{i=1}^{k+1} i(i+2)
+&= \sum_{i=1}^{k} i(i+2) + (k+1)(k+3) \\
+&= \frac{k(k+1)(2k+7)}{6} + (k+1)(k+3) \\
+&= \frac{k(k+1)(2k+7) + 6(k+1)(k+3)}{6} \\
+&= \frac{(k+1)\bigl[k(2k+7) + 6(k+3)\bigr]}{6} \\
+&= \frac{(k+1)(2k^2 + 7k + 6k + 18)}{6} \\
+&= \frac{(k+1)(2k^2 + 13k + 18)}{6} \\
+&= \frac{(k+1)(2k^2 + 13k + 18)}{6}.
+\end{aligned}
+\]
+Factorizamos el polinomio $2k^2+13k+18 = (2k+9)(k+2)$:
+\[
+\sum_{i=1}^{k+1} i(i+2)
+= \frac{(k+1)(k+2)(2k+9)}{6}
+= \frac{(k+1)\bigl((k+1)+1\bigr)\bigl(2(k+1)+7\bigr)}{6},
+\]
+que es $P(k+1)$. Luego $P(k)\implica P(k+1)$.
+
+\noindent Por inducci\'on, $P(n)$ es verdadera para todo $n\geq 1$.
+\qed
+\end{proof}
+\end{ejemplo}
+
+% --- EJEMPLO 3: Desigualdad factorial ---
+\begin{ejemplo}[Desigualdad factorial]
+\label{ej:factorial}
+Demostrar que para todo $n \geq 1$:
+\[
+n! \;\geq\; 2^{\,n-1}.
+\]
+
+\begin{proof}
+Sea $P(n)$ la proposici\'on $n! \geq 2^{n-1}$.
+
+\noindent\textbf{Paso base ($n=1$):}
+$1! = 1$ y $2^{0} = 1$, luego $1 \geq 1$. $P(1)$ es verdadera.
+
+\noindent\textbf{Hip\'otesis inductiva:} Supongamos $P(k)$, i.e.\ $k! \geq 2^{k-1}$.
+
+\noindent\textbf{Paso inductivo ($k \to k+1$):}
+\[
+\begin{aligned}
+(k+1)! &= (k+1) \cdot k! \\
+      &\geq (k+1) \cdot 2^{k-1} \quad\text{(por hip\'otesis inductiva)}.
+\end{aligned}
+\]
+Notemos que para $k \geq 1$, se cumple $k+1 \geq 2$, luego:
+\[
+(k+1)! \;\geq\; 2 \cdot 2^{k-1} \;=\; 2^{k}.
+\]
+Esto es precisamente $P(k+1)$: $(k+1)! \geq 2^{(k+1)-1} = 2^{k}$.
+
+\noindent Por inducci\'on, $n! \geq 2^{n-1}$ para todo $n \geq 1$.
+\qed
+\end{proof}
+\end{ejemplo}
+
+% --- EJEMPLO 4: Divisibilidad (7^n + 1 divisible por 8) ---
+\begin{ejemplo}[Divisibilidad]
+\label{ej:divisibilidad}
+Demostrar que $7^{n} + 1$ es divisible por $8$ para todo $n$ \textbf{impar}
+positivo.
+
+\begin{proof}
+Si $n$ es impar, podemos escribir $n = 2m-1$ con $m \geq 1$.
+Sea $P(m)$ la proposici\'on: $7^{2m-1} + 1$ es divisible por $8$.
+
+\noindent\textbf{Paso base ($m=1$):}
+$7^{1} + 1 = 8$, que es divisible por $8$. $P(1)$ se cumple.
+
+\noindent\textbf{Hip\'otesis inductiva:} Supongamos $P(k)$, i.e.\
+$7^{2k-1} + 1 = 8t$ para alg\'un entero $t$.
+
+\noindent\textbf{Paso inductivo ($k \to k+1$):} Analicemos $7^{2(k+1)-1} + 1$
+= $7^{2k+1} + 1$:
+\[
+\begin{aligned}
+7^{2k+1} + 1 &= 7^{2} \cdot 7^{2k-1} + 1 \\
+            &= 49 \cdot 7^{2k-1} + 1.
+\end{aligned}
+\]
+Usamos la hip\'otesis inductiva $7^{2k-1} = 8t - 1$:
+\[
+\begin{aligned}
+7^{2k+1} + 1 &= 49\,(8t - 1) + 1 \\
+             &= 392\,t - 49 + 1 \\
+             &= 392\,t - 48 \\
+             &= 8\,(49\,t - 6),
+\end{aligned}
+\]
+que es m\'ultiplo de $8$. Luego $P(k) \implica P(k+1)$.
+
+\noindent Por inducci\'on, $7^{n}+1$ es divisible por $8$ para todo $n$ impar
+positivo.
+\qed
+\end{proof}
+\end{ejemplo}
+
+% --- EJEMPLO 5: Funcion recursiva ---
+\begin{ejemplo}[Funci\'on recursiva]
+\label{ej:recursiva}
+Dada la funci\'on $f: \N \to \N$ definida por:
+\[
+f(1) = 25, \qquad
+f(n+1) = f(n) + 4,
+\]
+conjeturar y demostrar una f\'ormula cerrada para $f(n)$.
+
+\begin{proof}
+Calculemos los primeros valores:
+\[
+f(1)=25,\; f(2)=29,\; f(3)=33,\; f(4)=37,\; \dots
+\]
+Parece que $f(n) = 4n + 21$. Demostr\'emoslo por inducci\'on.
+
+Sea $P(n)$ la proposici\'on $f(n) = 4n + 21$.
+
+\noindent\textbf{Paso base ($n=1$):}
+$4\cdot 1 + 21 = 25 = f(1)$. $P(1)$ es verdadera.
+
+\noindent\textbf{Hip\'otesis inductiva:} $f(k) = 4k + 21$.
+
+\noindent\textbf{Paso inductivo ($k \to k+1$):}
+\[
+\begin{aligned}
+f(k+1) &= f(k) + 4 \quad\text{(definici\'on recursiva)} \\
+       &= (4k + 21) + 4 \quad\text{(hip\'otesis inductiva)} \\
+       &= 4k + 25 \\
+       &= 4(k+1) + 21,
+\end{aligned}
+\]
+que es $P(k+1)$.
+
+\noindent Por inducci\'on, $f(n) = 4n + 21$ para todo $n \geq 1$.
+\qed
+\end{proof}
+\end{ejemplo}
+
+% =============================================================================
+% SECCION 4: INDUCCION FUERTE
+% =============================================================================
+\section{Inducci\'on Fuerte (Forma Fuerte de Inducci\'on)}
+
+En algunas demostraciones, la hip\'otesis inductiva $P(k)$ no es suficiente para
+probar $P(k+1)$: necesitamos suponer que la propiedad vale para \textbf{todos}
+los valores menores o iguales a $k$, no solo para $k$. Esto es la
+\emph{inducci\'on fuerte}.
+
+\begin{definicion}[Inducci\'on fuerte]
+\label{def:induccionfuerte}
+Sea $P(n)$ una funci\'on proposicional definida sobre los enteros $\geq n_0$.
+Si se cumple:
+\begin{enumerate}
+    \item $P(n_0)$ es verdadera (paso base).
+    \item Para todo $k > n_0$, la veracidad de
+          $P(n_0), P(n_0+1), \dots, P(k-1)$ implica $P(k)$.
+\end{enumerate}
+entonces $P(n)$ es verdadera para todo $n \geq n_0$.
+\end{definicion}
+
+En forma simb\'olica:
+\[
+\bigl[\,P(n_0) \;\wedge\;
+\para k>n_0\;
+\bigl(P(n_0)\wedge P(n_0+1)\wedge\cdots\wedge P(k-1) \implica P(k)\bigr)\,\bigr]
+\;\implica\; \para n\geq n_0\; P(n).
+\]
+
+\subsection*{Ejemplo: Sellos postales}
+
+Supongamos que tenemos sellos de $2$ y $5$ centavos. Queremos demostrar que
+podemos formar cualquier valor de al menos $4$ centavos.
+
+\begin{proof}
+Sea $P(n)$: \enquote{el valor $n$ puede formarse con sellos de $2$ y $5$}.
+Verifiquemos los casos base:
+\begin{itemize}
+    \item $4 = 2+2$.
+    \item $5 = 5$.
+    \item $6 = 2+2+2$.
+    \item $7 = 2+5$.
+\end{itemize}
+$P(4), P(5), P(6), P(7)$ son verdaderas.
+
+Ahora, para $k \geq 8$, supongamos que $P(4), P(5), \dots, P(k-1)$ son
+verdaderas. En particular, $P(k-4)$ es verdadera porque $k-4 \geq 4$.
+Si $k-4$ puede formarse, entonces agregando un sello de $2$ obtenemos $k$.
+Luego $P(k)$ es verdadera.
+
+Por inducci\'on fuerte, todo valor $n \geq 4$ puede formarse.
+\qed
+\end{proof}
+
+% =============================================================================
+% SECCION 5: PROPIEDAD DEL BUEN ORDEN
+% =============================================================================
+\section{Propiedad del Buen Orden}
+
+\begin{definicion}[Propiedad del buen orden]
+\label{def:wellordering}
+Todo conjunto no vac\'io de enteros no negativos posee un
+\textbf{elemento m\'{\i}nimo}.
+\end{definicion}
+
+Esta propiedad, aparentemente obvia, es equivalente al principio de inducci\'on
+matem\'atica. De hecho, se puede demostrar que:
+
+\[
+\text{Principio de inducci\'on} \;\sii\; \text{Propiedad del buen orden}.
+\]
+
+\begin{proof}[Demostraci\'on de la equivalencia (esquema)]
+\noindent\textbf{($\Rightarrow$)} Supongamos el principio de inducci\'on.
+Sea $A \subseteq \N$ no vac\'io. Supongamos (por contradicci\'on) que $A$ no
+tiene m\'inimo. Definimos $P(n)$: \enquote{$n \notin A$}. Como $A$ no tiene
+m\'inimo, $0 \notin A$ (si $0\in A$, ser\'ia el m\'inimo). Luego $P(0)$ vale.
+Si $P(k)$ vale para todo $k \leq n$, entonces $n+1\notin A$ (de lo contrario
+ser\'ia el m\'inimo). Por inducci\'on, $P(n)$ vale para todo $n$, luego
+$A = \varnothing$, contradicci\'on. Por tanto $A$ tiene m\'inimo.
+
+\noindent\textbf{($\Leftarrow$)} Supongamos la propiedad del buen orden.
+Sea $P(n)$ tal que $P(0)$ es verdadera y $P(k) \implica P(k+1)$.
+Sea $A = \{ n \in \N \mid P(n) \text{ es falsa} \}$. Si $A$ no es vac\'io,
+tiene un m\'inimo $m$. Como $P(0)$ es verdadera, $m > 0$. Luego $m-1 \notin A$,
+por lo que $P(m-1)$ es verdadera. Pero $P(m-1) \implica P(m)$, contradicci\'on.
+Luego $A$ debe ser vac\'io y $P(n)$ vale para todo $n$.
+\qed
+\end{proof}
+
+Esta equivalencia es importante porque muestra que el principio de inducci\'on
+no es una \enquote{rareza} l\'ogica, sino que expresa una propiedad fundamental
+de los n\'umeros naturales: todo subconjunto no vac\'io tiene un primer elemento.
+
+% =============================================================================
+% SECCION 6: INDUCCION Y PROGRAMACION
+% =============================================================================
+\section{Inducci\'on y Programaci\'on}
+\label{sec:programacion}
+
+La inducci\'on matem\'atica no es solo una herramienta te\'orica: es el
+fundamento l\'ogico de dos conceptos computacionales centrales:
+los bucles y la recursi\'on.
+
+\subsection{Bucle \texttt{for} como inducci\'on}
+
+Un bucle \texttt{for} recorre los valores $i = 1, 2, \dots, n$ y mantiene una
+propiedad que se cumple al inicio de cada iteraci\'on: el
+\textbf{invariante de bucle}. La demostraci\'on de que el invariante se
+mantiene es exactamente el paso inductivo, y la verificaci\'on inicial es el
+caso base.
+
+\begin{ejemplo}[Suma con \texttt{for}]
+\label{ej:for}
+El siguiente programa calcula $1+2+\cdots+n$:
+
+\begin{lstlisting}[language=C++]
+// Calcula la suma de 1 a n usando un bucle for.
+// Invariante: al inicio de cada iteracion i,
+//   total almacena 1 + 2 + ... + (i-1).
+int sumar(int n) {
+    int total = 0;           // caso base: suma de 0 términos = 0
+    for (int i = 1; i <= n; i++) {
+        total += i;          // paso inductivo: total += i
+    }
+    return total;            // post: total = n(n+1)/2
+}
+\end{lstlisting}
+
+La correspondencia es directa:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Etapa} & \textbf{Inducci\'on} & \textbf{Bucle \texttt{for}} \\
+\midrule
+Inicio & $P(0)$: suma de 0 t\'erminos & \texttt{total = 0} \\
+Iteraci\'on $i$ & $P(i-1)$ es verdadera & Invariante se cumple \\
+Cuerpo & Demostramos $P(i-1)\implica P(i)$ & \texttt{total += i} \\
+Final & $\para i\; P(i)$ & \texttt{total} contiene la suma \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{ejemplo}
+
+\subsection{Recursi\'on como inducci\'on estructural}
+
+Una funci\'on recursiva se define con uno o m\'as casos base y una llamada
+recursiva con argumentos m\'as pequenios. Demostrar que la funci\'on es correcta
+equivale a demostrar:
+\begin{itemize}
+    \item El caso base produce el resultado correcto (paso base).
+    \item Si la funci\'on funciona para argumentos menores, funciona para el
+          argumento actual (paso inductivo).
+\end{itemize}
+
+\begin{ejemplo}[Funci\'on factorial recursiva]
+\label{ej:recursiva2}
+
+\begin{lstlisting}[language=C++]
+// Factorial recursivo: n! = n * (n-1)!
+// Caso base: 0! = 1
+// Paso inductivo: n! = n * (n-1)!
+int factorial(int n) {
+    if (n == 0) return 1;              // caso base
+    return n * factorial(n - 1);       // paso inductivo
+}
+\end{lstlisting}
+\end{ejemplo}
+
+\subsection{Invariante de bucle}
+
+El invariante de bucle es una propiedad que:
+\begin{enumerate}
+    \item Es verdadera \textbf{antes} de la primera iteraci\'on (caso base).
+    \item Si es verdadera al inicio de una iteraci\'on, sigue siendo verdadera
+          al final de esa iteraci\'on (paso inductivo).
+    \item Al terminar el bucle, el invariante nos da informaci\'on \'util sobre
+          el resultado.
+\end{enumerate}
+Esta t\'ecnica de demostraci\'on de programas fue formalizada por
+\textbf{C. A. R. Hoare} (1969) y es la aplicaci\'on m\'as directa de la
+inducci\'on en ingenier\'{\i}a de software.
+
+% =============================================================================
+% SECCION 7: EJERCICIOS PROPUESTOS
+% =============================================================================
+\section{Ejercicios Propuestos}
+
+Los siguientes ejercicios se dejan como pr\'actica para el estudiante.
+Se recomienda intentar cada demostraci\'on por inducci\'on antes de consultar
+una soluci\'on.
+
+\begin{ejercicio}[Suma de los primeros $n$ impares]
+\label{ej:impares}
+Demostrar que la suma de los primeros $n$ n\'umeros impares es $n^{2}$:
+\[
+1 + 3 + 5 + \cdots + (2n-1) = n^{2}.
+\]
+\end{ejercicio}
+
+\begin{ejercicio}[Suma de los primeros $n$ cubos]
+\label{ej:cubos}
+Demostrar que:
+\[
+1^{3} + 2^{3} + 3^{3} + \cdots + n^{3} =
+\left[\frac{n(n+1)}{2}\right]^{2}.
+\]
+\end{ejercicio}
+
+\begin{ejercicio}[Suma de $n(n+1)$]
+\label{ej:sumann1}
+Demostrar que para todo $n \geq 1$:
+\[
+1\cdot 2 + 2\cdot 3 + 3\cdot 4 + \cdots + n(n+1) =
+\frac{n(n+1)(n+2)}{3}.
+\]
+\end{ejercicio}
+
+\begin{ejercicio}[Diagonales de un pol\'{\i}gono]
+\label{ej:diagonales}
+Demostrar que un pol\'{\i}gono convexo de $n \geq 3$ lados tiene
+\[
+d_n = \frac{n(n-3)}{2}
+\]
+diagonales.
+\end{ejercicio}
+
+\begin{ejercicio}[Desigualdad $2^{n} \geq n^{2}$]
+\label{ej:desigualdad2n}
+Demostrar que $2^{n} \geq n^{2}$ para todo $n \geq 4$.
+\end{ejercicio}
+
+\begin{ejercicio}[Suma de Fibonacci]
+\label{ej:fibonacci}
+Sea $F_n$ la sucesi\'on de Fibonacci definida por:
+\[
+F_1 = 1,\; F_2 = 1,\; F_n = F_{n-1} + F_{n-2}\;(n\geq 3).
+\]
+Demostrar que la suma de los primeros $n$ t\'erminos es:
+\[
+F_1 + F_2 + \cdots + F_n = F_{n+2} - 1.
+\]
+\end{ejercicio}
+
+\begin{ejercicio}[Suma de cuadrados]
+\label{ej:cuadrados}
+Demostrar que:
+\[
+1^{2} + 2^{2} + 3^{2} + \cdots + n^{2} = \frac{n(n+1)(2n+1)}{6}.
+\]
+\end{ejercicio}
+
+\begin{ejercicio}[Suma de potencias de $2$]
+\label{ej:potencias2}
+Demostrar que:
+\[
+2^{0} + 2^{1} + 2^{2} + \cdots + 2^{n} = 2^{n+1} - 1.
+\]
+\end{ejercicio}
+
+% =============================================================================
+% SECCION 8: FALACIAS Y ERRORES COMUNES
+% =============================================================================
+\section{Falacias y Errores Comunes}
+
+La inducci\'on matem\'atica es una herramienta poderosa, pero debe aplicarse
+correctamente. A continuaci\'on presentamos un ejemplo cl\'asico de falacia
+para ilustrar lo que puede salir mal.
+
+\subsection*{La paradoja de los caballos}
+
+\enquote{Todos los caballos son del mismo color}. Intentemos \enquote{demostrarlo}
+por inducci\'on.
+
+Sea $P(n)$: \enquote{en cualquier conjunto de $n$ caballos, todos son del mismo
+color}.
+
+\noindent\textbf{Paso base ($n=1$):} En un conjunto de un solo caballo,
+trivialmente todos son del mismo color. $P(1)$ es verdadera.
+
+\noindent\textbf{Hip\'otesis inductiva:} Supongamos $P(k)$: en cualquier
+conjunto de $k$ caballos, todos son del mismo color.
+
+\noindent\textbf{Paso inductivo ($k\to k+1$):} Tomemos un conjunto de $k+1$
+caballos. Numer\'emoslos $c_1, c_2, \dots, c_{k+1}$.
+\begin{itemize}
+    \item El subconjunto $\{c_1, \dots, c_k\}$ tiene $k$ caballos, luego por
+          $P(k)$ todos son del mismo color.
+    \item El subconjunto $\{c_2, \dots, c_{k+1}\}$ tambi\'en tiene $k$ caballos,
+          luego todos son del mismo color.
+    \item Los caballos $c_2, \dots, c_k$ est\'an en ambos subconjuntos, por lo
+          que el color de $c_1$ es el mismo que el de $c_2$, que es el mismo
+          que el de $c_{k+1}$. As\'{\i}, todos los $k+1$ caballos son del mismo
+          color.
+\end{itemize}
+
+\noindent\textbf{Conclusi\'on:} Todos los caballos son del mismo color.
+
+\begin{observacion}[\texorpdfstring{¿D\'onde falla la demostraci\'on?}{Donde falla la demostracion}]
+\label{obs:falla}
+El error est\'a en el paso inductivo para $k=1$. Cuando tenemos $k+1 = 2$
+caballos, los subconjuntos $\{c_1\}$ y $\{c_2\}$ tienen cada uno $1$ caballo,
+pero no hay caballos en com\'un entre ellos. Por tanto, no podemos inferir que
+$c_1$ y $c_2$ tengan el mismo color. La hip\'otesis inductiva $P(1)$ es
+verdadera, pero $P(1) \implica P(2)$ es falso.
+
+La lecci\'on: siempre hay que verificar que el paso inductivo funcione para
+\textbf{todos} los valores de $k$, especialmente los m\'as pequenios.
+\end{observacion}
+
+\subsection*{Otros errores comunes}
+
+\begin{itemize}
+    \item \textbf{Olvidar el paso base:} Sin caso base, la inducci\'on no tiene
+          punto de partida. Podr\'{\i}amos \enquote{demostrar} cualquier cosa.
+    \item \textbf{Paso base incompleto:} A veces el paso inductivo requiere
+          m\'as de un valor base (como en la inducci\'on fuerte).
+    \item \textbf{Hip\'otesis inductiva mal formulada:} La hip\'otesis debe
+          ser exactamente $P(k)$, no una versi\'on modificada.
+    \item \textbf{Variable cambiada:} No confundir la variable $n$ con $k$.
+          $k$ es un valor fijo arbitrario; $n$ es la variable universal.
+\end{itemize}
+
+% =============================================================================
+% SECCION 9: BIBLIOGRAFIA
+% =============================================================================
+\section{Bibliograf\'{\i}a}
+
+\begin{enumerate}[label={[}\arabic{*}{]}]
+    \item Johnsonbaugh, R. \textit{Matem\'aticas Discretas}. 6.\textsuperscript{a}
+          ed., Pearson, 2005. — Cap\'{\i}tulos 1.7 y 1.8 (Inducci\'on Matem\'atica
+          y Forma Fuerte de Inducci\'on).
+    \item Rosen, K. \textit{Discrete Mathematics and its Applications}.
+          8.\textsuperscript{a} ed., McGraw-Hill, 2019. — Cap\'{\i}tulo 5
+          (Inducci\'on y Recursi\'on).
+    \item Sominsky, I. \textit{El M\'etodo de Inducci\'on Matem\'atica}.
+          Editorial MIR, Mosc\'u, 1975. — Monograf\'{\i}a cl\'asica dedicada
+          \'unicamente a la inducci\'on.
+    \item Peano, G. \textit{Arithmetices principia, nova methodo exposita}.
+          1889. — Formulaci\'on original de los axiomas de Peano, incluido
+          el axioma P5 de inducci\'on.
+    \item Hoare, C. A. R. \enquote{An Axiomatic Basis for Computer Programming}.
+          \textit{Communications of the ACM}, vol.\ 12, n.\ 10, 1969,
+          pp.\ 576--580.
+    \item Velleman, D. \textit{How to Prove It: A Structured Approach}.
+          3.\textsuperscript{a} ed., Cambridge University Press, 2019.
+    \item Material de c\'atedra: \texttt{REFERENCIA\_AXIOMAS\_ZFC\_PEANO.md}
+          (Principia Computationis: axiomas de Peano, ZFC y su relaci\'on
+          con C++).
+\end{enumerate}
+
+% -----------------------------------------------------------------------------
+% DIAGRAMA TIKZ: FICHAS DE DOMINO (ilustracion opcional)
+% -----------------------------------------------------------------------------
+\section*{Ap\'endice: Diagrama de las fichas de domin\'o}
+
+Como ilustraci\'on de la analog\'{\i}a de la Secci\'on~\ref{sec:domino},
+incluimos un diagrama TikZ simple que muestra las primeras fichas.
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % Dibujamos 6 fichas de domino cayendo en secuencia
+    \foreach \x in {0,1,2,3,4,5} {
+        \draw[fill=gray!20] (\x*1.8,0) rectangle (\x*1.8+1.2,2);
+        \draw (\x*1.8+0.6,1) -- (\x*1.8+0.6,1.5);
+        \fill[black] (\x*1.8+0.4,1.3) circle (0.08);
+        \fill[black] (\x*1.8+0.8,0.7) circle (0.08);
+        % Flecha de caida
+        \draw[->,thick,red!70!black] (\x*1.8+0.6,2.5) -- (\x*1.8+0.6,2.1);
+        % Etiqueta debajo
+        \node[below] at (\x*1.8+0.6, -0.2) {\small $P(\x+1)$};
+    }
+    % Etiqueta general
+    \node[above] at (5.4, 3.2) {\textbf{Ca\'{\i}da de fichas de domin\'o}};
+    \node[below] at (5.4, -0.8) {Si $P(1)$ cae y $P(k)\implica P(k+1)$, entonces todas caen.};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % Escalera de la induccion: bloques numerados
+    \foreach \x in {0,...,4} {
+        \draw[fill=blue!15] (\x*1.5,\x*0.5) rectangle (\x*1.5+1,\x*0.5+0.6);
+        \node at (\x*1.5+0.5,\x*0.5+0.3) {$\x+1$};
+        \ifnum\x<4
+            \draw[->,thick] (\x*1.5+1,\x*0.5+0.3) -- (\x*1.5+1.5,\x*0.5+0.8);
+        \fi
+    }
+    \node[above] at (3.75, 2.8) {\textbf{Escalera de la inducci\'on}};
+    \node[below] at (3.75, -0.3) {De cada bloque se alcanza el siguiente.};
+\end{tikzpicture}
+\end{center}
+
+% =============================================================================
+% FIN DEL DOCUMENTO
+% =============================================================================
+\end{document}

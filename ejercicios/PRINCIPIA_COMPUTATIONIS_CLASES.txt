@@ -1,0 +1,331 @@
+PRINCIPIA COMPUTATIONIS — Clases completas
+
+Primera clase — Axiomas de Peano en profundidad
+=================================================
+
+Recordatorio: Los axiomas de Peano (1889) definen los números naturales N a partir de:
+- 0 — un concepto primitivo (no se define, se asume)
+- S — la función sucesor (el que le sigue a un número)
+
+P1: El cero es natural
+
+0 ∈ N
+
+Significado: Existe un primer número. La cadena empieza en algún lado.
+
+Pregunta clave: ¿Por qué es necesario esto? Porque si no decimos explícitamente que 0 está en N, el conjunto podría ser vacío. P1 garantiza que N no es vacío.
+
+En programación: Es la inicialización. Todo bucle, toda variable, necesita un punto de partida.
+  int i = 0;        // Acá estamos aplicando P1
+  int suma = 0;     // Ídem
+
+Ejemplo de por qué importa: Si usted escribe:
+  int suma;              // Sin inicializar — ERROR conceptual
+  for(int i=0; i<n; i++){
+      suma += i;          // ¿suma empieza en qué? Basura.
+  }
+P1 nos dice: necesitamos un punto de partida definido. En N, ese punto es 0. En un programa, cada variable necesita su valor inicial.
+
+---
+
+P2: El sucesor también es natural
+
+∀n (n ∈ N → S(n) ∈ N)
+
+Se lee: "Para todo n, si n está en N, entonces el sucesor de n también está en N".
+
+Significado: La cadena no se corta. Siempre podemos avanzar al siguiente.
+
+Pregunta clave: ¿Qué pasaría si no existiera P2? Que N podría ser finito. P2 garantiza que N es infinito hacia adelante.
+
+En programación:
+  i++;     // S(i) — aplicamos P2
+Cada vez que incrementamos un contador, estamos aplicando el axioma del sucesor. El ++ en C++ es la función S de Peano.
+
+Importante: P2 no dice que S(n) sea distinto de todo lo anterior. Eso lo cubre P3 y P4. P2 solo dice "si estás adentro, tu sucesor también está adentro".
+
+---
+
+P3: El sucesor es único (inyectividad)
+
+∀n ∀m (S(n) = S(m) → n = m)
+
+Se lee: "Si los sucesores de n y de m son iguales, entonces n y m son iguales".
+
+Significado: No hay bifurcaciones. No puede pasar que dos números diferentes tengan el mismo sucesor. La cadena no se divide.
+
+Pregunta clave: Sin P3, podría pasar esto:
+  0 → 1 → 2 → 3 → ...
+        ↘ 3' → 4' → ...    (dos "3" diferentes)
+P3 dice que no. El camino es único.
+
+En programación:
+  int a = 5;
+  int b = 5;
+  a++;  // a = 6
+  b++;  // b = 6
+  // Si a == b, entonces antes del ++ también eran iguales
+Esto parece obvio, pero es un axioma: la igualdad se preserva bajo el sucesor. En C++, si dos variables son iguales y aplicamos la misma operación, siguen siendo iguales.
+
+---
+
+P4: El cero no tiene "padre"
+
+∀n (S(n) ≠ 0)
+
+Se lee: "Para todo n, el sucesor de n nunca es 0".
+
+Significado: La cadena tiene un principio absoluto. No hay ningún número cuyo sucesor sea 0. 0 es el primero, punto.
+
+Pregunta clave: Sin P4, podría pasar que la cadena dé la vuelta:
+  0 → 1 → 2 → ... → 99 → 0 → 1 → ...  (un ciclo)
+P4 dice que no. Es una línea recta infinita, no un círculo.
+
+En programación: Esto es fundamental para los tipos unsigned:
+  unsigned int i = 0;
+  i--;  // En unsigned: da 4294967295 (el máximo)
+¡Violación de P4! Por eso en C++ unsigned int no modela exactamente a N: permite que al decrementar 0 se obtenga un número grande. N postula que 0 no tiene anterior.
+
+---
+
+P5: INDUCCIÓN — El más importante
+
+∀P⊆N: [ P(0) ∧ ∀k( P(k) → P(S(k)) ) ] → ∀n P(n)
+
+Se lee: "Para toda propiedad P de números naturales: si P(0) es verdadero y, para todo k, P(k) implica P(k+1), entonces P(n) es verdadero para todo n".
+
+Este es el axioma más poderoso y el que más vamos a usar en computación.
+
+Piense en una fila de fichas de dominó infinitamente larga:
+
+  [0] → [1] → [2] → [3] → [4] → ...
+
+La inducción funciona así:
+
+Paso 1 — Caso base: P(0) es verdadero. Tiramos la primera ficha.
+Paso 2 — Hipótesis inductiva: Suponemos P(k) verdadero (para algún k). Suponemos que la ficha k cayó.
+Paso 3 — Paso inductivo: Demostramos P(k) → P(k+1). Demostramos que si cae la ficha k, entonces cae la ficha k+1.
+Paso 4 — Conclusión: ∀n P(n). Todas las fichas caen.
+
+La clave está en el paso 3: demostrar que la propiedad se hereda. Si logramos eso, más el caso base, P5 nos garantiza que vale para todos.
+
+---
+
+Ejemplo completo: Suma de 1 a n
+
+Demostremos por inducción que:
+  1 + 2 + 3 + ... + n = n(n+1)/2
+
+Paso 1 — Caso base (n=0):
+  Suma vacía = 0
+  0(0+1)/2 = 0/2 = 0
+  ∴ 0 = 0 ✓  — Se cumple
+
+Paso 2 — Hipótesis inductiva:
+  Supongo que vale para n = k:
+  1 + 2 + ... + k = k(k+1)/2
+
+Paso 3 — Paso inductivo (k → k+1):
+  Partimos de la hipótesis y sumamos (k+1):
+  1 + 2 + ... + k + (k+1) = k(k+1)/2 + (k+1)
+  Factor común (k+1):
+  = (k+1)(k/2 + 1)
+  = (k+1)(k/2 + 2/2)
+  = (k+1)(k+2)/2
+  = (k+1)((k+1)+1)/2  ← ¡llegamos a la fórmula para k+1! ✓
+
+Paso 4 — Conclusión (por P5):
+  Como P(0) se cumple y P(k) → P(k+1), entonces por P5:
+  ∀n ∈ N: 1 + 2 + ... + n = n(n+1)/2
+
+---
+
+Conexión con el for
+
+Ahora mire esto:
+
+  int suma = 0;                    // ← CASO BASE: P(0)
+  for(int i = 1; i <= n; i++) {    // ← i avanza: 0 → 1 → 2 → ... → n
+      suma = suma + i;              // ← PASO INDUCTIVO: P(k) → P(k+1)
+  }
+  // Al terminar: suma = n(n+1)/2  // ← CONCLUSIÓN: ∀n P(n)
+
+Cada iteración del for es un paso inductivo:
+- i empieza en 1 (el primer sucesor de 0) → caso base aplicado
+- En cada vuelta, i pasa de k a k+1 → se aplica S(k)
+- La propiedad "suma = 1+2+...+i" se mantiene invariante
+- Cuando termina, vale para todo i hasta n
+
+Esto no es una analogía. Es literalmente una demostración por inducción ejecutándose en la máquina.
+
+---
+
+Resumen visual de los 5 axiomas
+
+P1: 0 ∈ N          → Tenemos un comienzo
+P2: S(n) ∈ N       → Siempre podemos avanzar
+P3: S(n)=S(m)→n=m  → El avance es determinista
+P4: S(n)≠0         → No se puede retroceder al inicio
+P5: [P(0)∧(P(k)→P(k+1))]→∀n P(n)  → Lo que se hereda, vale para todos
+
+N se ve así:
+
+  0 → 1 → 2 → 3 → 4 → 5 → ...
+  ↑    ↑    ↑    ↑    ↑    ↑
+  P1  S(0) S(1) S(2) S(3) S(4)  ← P2 garantiza que siempre hay siguiente
+       ↑    ↑    ↑    ↑    ↑
+       P3 garantiza que cada uno tiene un único predecesor
+       P4 garantiza que 0 no está en esa cadena
+       P5 permite demostrar propiedades a lo largo de toda la cadena
+
+---
+
+Segunda clase — Las funciones (¿de dónde vienen?)
+===================================================
+
+Usted pregunta: "¿cómo sabemos que una función existe?" La respuesta cambia según en qué sistema esté parado.
+
+Capa 1: En Peano — La función es un concepto primitivo
+
+En los axiomas de Peano, la función sucesor S no se demuestra. Se postula. Es parte del mobiliario básico del mundo, como el 0.
+
+Peano dice: "Doy por sentado que existe una operación que a cada número n le asigna su siguiente. La llamo S. No la demuestro. Es un axioma."
+
+  S: N → N
+     n ↦ n+1
+
+P2 ya la presupone: "Si n está en N, entonces S(n) está en N" — pero note que P2 no crea a S, solo dice que S respeta el conjunto. S ya estaba ahí desde el principio.
+
+Entonces: En Peano, algunas funciones vienen dadas. No se demuestran. Son la base de todo.
+
+---
+
+Capa 2: En ZFC — La función se construye con conjuntos
+
+Acá está la clave. ZFC no tiene "funciones" como concepto primitivo. Solo tiene conjuntos y pertenencia (∈). Las funciones se definen a partir de conjuntos.
+
+Para construir una función necesitamos:
+
+Paso 1 — El par ordenado (a, b)
+
+Primero definimos qué es un par ordenado. Kuratowski (1921) dio la definición estándar:
+
+  (a, b) = { {a}, {a, b} }
+
+Esto es un conjunto. ¿Por qué funciona? Porque podemos distinguir el primer elemento del segundo:
+- El primer elemento está en todos los subconjuntos
+- El segundo elemento está solo en uno de ellos
+
+¿Qué axioma nos da el par ordenado? ZF3 (Par) + ZF2 (Vacío):
+  {a} se construye con ZF3: {a, a} = {a}
+  {a, b} se construye con ZF3
+  (a,b) = {{a}, {a,b}} se construye con ZF3 aplicado dos veces
+
+Paso 2 — El producto cartesiano A × B
+
+  A × B = { (a,b) | a ∈ A ∧ b ∈ B }
+
+Esto se construye con ZF5 (Partes) y ZF4 (Unión), pero la demostración es técnica. Lo importante: ZFC garantiza que A × B es un conjunto.
+
+Paso 3 — La función como subconjunto de A × B
+
+Una función f: A → B se define como:
+
+  f ⊆ A × B  ∧  ∀x∈A ∃!y∈B: (x,y)∈f
+
+Se lee: "f es un subconjunto de A × B tal que para cada x en A existe un único y en B con (x,y) en f".
+
+¿Y cómo sabemos que existe esa función? Por el axioma de Reemplazo (ZF6). ZF6 dice: si tenemos una propiedad φ(x,y) que asigna a cada x un único y, entonces existe el conjunto de los pares (x,y). Ese conjunto es la función.
+
+  ZF6: ∀A [∀x∈A ∃!y φ(x,y) → ∃B ∀x∈A ∃y∈B φ(x,y)]
+
+En criollo: "Si puedo describir una regla que a cada elemento de A le asigna un único elemento, entonces existe el conjunto de esas asignaciones = existe la función."
+
+---
+
+La tabla completa
+
+  Sistema             Qué es una función                Cómo sabemos que existe
+  Peano               Concepto primitivo (S)            Se postula, no se demuestra
+  ZFC                 Conjunto de pares ordenados       Se construye con ZF3+ZF4+ZF5+ZF6
+  λ-cálculo (Church)  Regla de transformación            Se postula (abstracción λ)
+  C++                 Bloque de código con nombre        La escribe el programador, el compilador la verifica
+  Matemática clásica  Correspondencia entre conjuntos    Se define por una propiedad, ZF6 garantiza que existe
+
+---
+
+Ejemplo concreto en ZFC
+
+Construyamos la función f(x) = x + 1 (la sucesor) en ZFC:
+
+1. N ya está construido (von Neumann: ∅, {∅}, {∅,{∅}}, ...)
+
+2. Queremos f ⊆ N × N tal que f(x) = x ∪ {x}
+
+3. La propiedad φ(x,y) es: "y = x ∪ {x}"
+   Para cada x ∈ N, existe un único y que cumple eso (por ZF3 + ZF4)
+
+4. Por ZF6 (Reemplazo): existe el conjunto B = { y | ∃x∈N: φ(x,y) }
+   = { ∅∪{∅}, {∅}∪{{∅}}, {∅,{∅}}∪{{∅,{∅}}}, ... }
+   = { {∅}, {∅,{∅}}, {∅,{∅},{∅,{∅}}}, ... }
+   = { 1, 2, 3, ... }  ← ¡los naturales menos el 0!
+
+5. Luego, f = { (x, y) ∈ N × B | y = x ∪ {x} } es la función sucesor
+
+¿Ve? No asumimos que S existe. La construimos a partir de los axiomas de ZFC.
+
+---
+
+En C++ — la función del programador
+
+En C++, una función como esta:
+
+  int sucesor(int x) {
+      return x + 1;
+  }
+
+es, matemáticamente, un conjunto de pares:
+  sucesor = { (0,1), (1,2), (2,3), (3,4), ... }
+
+El compilador:
+1. Verifica que el tipo de retorno (int) existe → el conjunto es subconjunto de int × int
+2. Verifica que el cuerpo "return x+1" es una expresión válida → la regla φ(x,y) está bien formada
+3. Genera código que implementa esa función en la máquina
+
+---
+
+Axioma de Elección (AC)
+
+AC: ∀F [∅∉F → ∃f: F → ⋃F ∀A∈F (f(A)∈A)]
+
+Este axioma dice: "Si tengo una familia de conjuntos no vacíos, existe una función que elige un elemento de cada uno".
+
+Acá la función existe pero no la construimos explícitamente. No sabemos qué elige, solo sabemos que la función está ahí. Esto es controvertido porque no es constructivo: la función existe pero no podemos calcularla.
+
+En programación, AC corresponde a funciones no-determinísticas o que usan rand():
+  int elegir(vector<int>& opciones) {
+      return opciones[rand() % opciones.size()];
+  }
+
+---
+
+Resumen para su cuaderno
+
+¿De dónde sale la función?
+
+1. PEANO:   S (sucesor) es primitivo. Se postula, no se demuestra.
+
+2. ZFC:     Una función es un conjunto de pares ordenados.
+            Se define como f ⊆ A×B con ∀x∈A ∃!y∈B: (x,y)∈f.
+            Su existencia la garantiza ZF6 (Reemplazo).
+
+3. C++:     El programador escribe una regla, el compilador
+            verifica tipos, y el código generado implementa
+            la función como secuencia de instrucciones.
+
+4. Elección (AC): Existen funciones que no podemos construir
+            explícitamente, solo sabemos que están ahí.
+
+---
+
+FIN DE LAS CLASES

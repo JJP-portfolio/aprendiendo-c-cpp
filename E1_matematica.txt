@@ -1,0 +1,41 @@
+    📝 Parte A — Coloquial → Simbolico:                              
+
+    Usando p: "estudio", q: "entendi el tema", r: "aprobe":       
+1. "Si estudie y entendi el tema, entonces aprobe"             
+2. "No es cierto que haya aprobado sin estudiar"               
+3. "Estudie pero no entendi el tema, y sin embargo aprobe" 
+
+1. p^q -> r
+2. ~(r ^ ~p)
+3. (p^~q) ^ r
+
+    📝 Parte B — Simbolico → Coloquial:                              
+
+1. p → (q ∨ r)                                                 
+2. (¬p ∧ ¬q) → ¬r                                              
+3. ¬(p ∧ q) ∧ r 
+
+1. Si estudie, entonces entendi el tema y aprobe.
+2. No estudie y no entendi el tema, entonces no aprobe.
+3. No es ciero que estudie y entendi el tema y aprobe.
+
+   📝 Parte C — Simplificar con leyes logicas:                      
+
+1. ¬(p ∨ q) ∧ p                                                
+2. (p ∧ q) ∨ (p ∧ ¬q)                                          
+3. p → (q → p)
+
+1.  ¬(p ∨ q) ∧ p  -> Aplicamos De Morgan.
+    ¬p ^ ¬q ^ p   -> Aplicamos Negacion.
+    F ^ ¬q        -> Aplicamos Absorcion.
+    F             ->
+    
+2.  (p ^ q) ∨ (p ^ ¬q)  -> Aplicamos Distributividad
+    p ^ (q ∨ ~q)       -> Aplicamos Negacion
+    p ^ V              -> Aplicamos Identidad
+    p                  -> Resultado
+
+3.  p → (q → p) -> Aplicamos Ley del Condicional
+    ~p ∨ ¬q ∨ p -> Aplicamos Negacion
+    V ∨ ¬q      -> Aplicamos Identidad
+    V          -> Resultado

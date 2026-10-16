@@ -1,0 +1,193 @@
+% ============================================================================
+%  MAPA CONCEPTUAL — Introducción a la Lógica y Problemas Computacionales (ILyPC)
+%  Pseudocódigo estilo cátedra (Alan Rodas Bonjour, UNAHUR)
+%  Fuentes: NOTACION.md (reglas de cátedra) + Material de PC UNLP (Bordignon e Iglesias)
+%  Compilar con: pdflatex mapa_ilypc.tex
+% ============================================================================
+\documentclass[a4paper,11pt,landscape]{article}
+
+% --- Paquetes esenciales ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+
+% --- Matemática ---
+\usepackage{amsmath,amssymb}
+
+% --- Diseño ---
+\usepackage[margin=1.4cm]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+
+% --- Color y TikZ ---
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{forest}
+\usetikzlibrary{arrows.meta}
+
+% --- Hipervínculos ---
+\usepackage[hidelinks]{hyperref}
+
+% ============================================================================
+%  COLORES Y ESTILOS
+% ============================================================================
+\definecolor{azulT}{HTML}{1F4E79}      % teoría / algoritmo
+\definecolor{verdeT}{HTML}{2E7D32}     % pseudocódigo
+\definecolor{naranjaT}{HTML}{E65100}   % parámetros
+\definecolor{rojoT}{HTML}{C62828}      % alternativas
+\definecolor{violetaT}{HTML}{6A1B9A}   % repeticiones
+\definecolor{grisT}{HTML}{546E7A}      % notas
+
+\tikzset{
+  nodoRaiz/.style={
+    draw=azulT, very thick, fill=azulT!15,
+    rounded corners=4pt, align=center, font=\bfseries\large\sffamily
+  },
+  nodoTema/.style={
+    draw=azulT, thick, fill=azulT!10,
+    rounded corners=4pt, align=center, font=\bfseries\small\sffamily
+  },
+  nodoAlgo/.style={
+    draw=azulT, fill=azulT!5,
+    rounded corners=3pt, align=center, font=\small\sffamily
+  },
+  nodoPseudo/.style={
+    draw=verdeT, fill=verdeT!6,
+    rounded corners=3pt, align=center, font=\small\sffamily
+  },
+  nodoParam/.style={
+    draw=naranjaT, fill=naranjaT!6,
+    rounded corners=3pt, align=center, font=\small\sffamily
+  },
+  nodoAlt/.style={
+    draw=rojoT, fill=rojoT!6,
+    rounded corners=3pt, align=center, font=\small\sffamily
+  },
+  nodoRep/.style={
+    draw=violetaT, fill=violetaT!6,
+    rounded corners=3pt, align=center, font=\small\sffamily
+  },
+  nodoNota/.style={
+    draw=grisT, dashed, fill=grisT!6,
+    rounded corners=3pt, align=center, font=\footnotesize\sffamily
+  }
+}
+
+% ============================================================================
+%  DOCUMENTO
+% ============================================================================
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\sffamily Mapa Conceptual}\\[2pt]
+  {\large\sffamily Introducción a la Lógica y Problemas Computacionales (ILyPC)}\\[2pt]
+  {\small\sffamily\color{grisT} Pseudocódigo estilo cátedra (UNAHUR) --- según \texttt{NOTACION.md} y material de PC (UNLP)}
+\end{center}
+
+\vspace{2mm}
+
+% ---------------------------------------------------------------------------
+%  MAPA CONCEPTUAL (árbol forest, raíz arriba, ramas en fila)
+% ---------------------------------------------------------------------------
+\begin{center}
+\resizebox{\textwidth}{!}{
+\begin{forest}
+  for tree={
+    draw, semithick,
+    rounded corners=3pt,
+    align=center,
+    l sep=3.5mm,                % separación vertical entre niveles
+    s sep=5mm,                  % separación horizontal entre ramas
+    edge={-{Stealth[length=2mm]}, semithick, gray!60},
+    font=\small\sffamily,
+  }
+  [ILyPC, nodoRaiz
+    [Algoritmo\\{\small\itshape secuencia finita de pasos}, nodoTema
+      [{Secuencial: se ejecuta\\una sola vez}, nodoAlgo]
+      [{Con ciclos: instrucciones\\que se repiten}, nodoAlgo]
+      [{PC: descomposición,\\patrones, abstracción}, nodoNota]
+    ]
+    [Pseudocódigo ILyPC\\{\small\itshape notación de la cátedra}, nodoTema
+      [{Punto de entrada:\\\texttt{Al empezar a ejecutar}}, nodoPseudo]
+      [{Procedimientos:\\\texttt{Definir} + infinitivo}, nodoPseudo]
+      [{Pipes: \texttt{|} nivel 1,\\\texttt{||} nivel 2}, nodoPseudo]
+      [{Primitivas: \texttt{Leer()},\\\texttt{Mostrar()}, \texttt{Mover}}, nodoPseudo]
+      [{Sensores: \texttt{¿pregunta?}\\\mbox{$\to$} Sí/No}, nodoPseudo]
+    ]
+    [Usos de parámetros\\{\small\itshape en procedimientos}, nodoTema
+      [{Entrada: dato que\\el procedimiento recibe}, nodoParam]
+      [{Salida: dato que\\produce y devuelve}, nodoParam]
+      [{Entrada y salida:\\recibe y modifica}, nodoParam]
+      [{Reutilizar el módulo\\con datos distintos}, nodoNota]
+    ]
+    [Alternativas\\condicionales, nodoTema
+      [{Simple:\\\texttt{Si ¿sensor? Entonces}\\{\small\ttfamily |acción}}, nodoAlt]
+      [{Doble:\\\texttt{Si ... Entonces}\\{\small\ttfamily |acción}\\{\small\ttfamily Sino}\\{\small\ttfamily |otra acción}}, nodoAlt]
+      [{No anidar \texttt{Si}:\\extraer procedimiento}, nodoNota]
+    ]
+    [Repeticiones\\{\small\itshape ciclos}, nodoTema
+      [{Determinada:\\\texttt{Repetir N veces}\\{\small\ttfamily |acción}}, nodoRep]
+      [{Indeterminada:\\\texttt{Mientras ¿condición?}\\{\small\ttfamily |acción}}, nodoRep]
+      [{No anidar \texttt{Repetir}:\\extraer procedimiento}, nodoNota]
+    ]
+  ]
+\end{forest}}
+\end{center}
+
+\vspace{3mm}
+
+% ---------------------------------------------------------------------------
+%  EJEMPLO CANÓNICO (del NOTACION.md de la cátedra)
+% ---------------------------------------------------------------------------
+\begin{center}
+  \begin{minipage}{0.58\textwidth}
+    \begin{center}
+      {\small\bfseries\sffamily Ejemplo canónico: leer dos números y mostrar el mayor}
+    \end{center}
+    {\ttfamily\small
+      Al empezar a ejecutar\\
+      |Determinar el mayor de dos numeros ingresados
+      \par\vspace{2pt}
+      Definir Determinar el mayor de dos numeros ingresados\\
+      |Leer(numeroA)\\
+      |Leer(numeroB)\\
+      |Comparar y mostrar mayor
+      \par\vspace{2pt}
+      Definir Comparar y mostrar mayor\\
+      |Si ¿numeroA es mayor que numeroB? Entonces\\
+      ||Mostrar(numeroA)\\
+      |Sino\\
+      ||Mostrar(numeroB)
+    }
+  \end{minipage}
+  \hspace{4mm}
+  \begin{minipage}{0.34\textwidth}
+    \begin{center}
+      {\small\bfseries\sffamily Leyenda de colores}
+    \end{center}
+    {\small\sffamily
+    \begin{tabular}{@{}ll@{}}
+      \color{azulT}{\rule{5mm}{2mm}} & Teoría y algoritmo\\
+      \color{verdeT}{\rule{5mm}{2mm}} & Pseudocódigo ILyPC\\
+      \color{naranjaT}{\rule{5mm}{2mm}} & Usos de parámetros\\
+      \color{rojoT}{\rule{5mm}{2mm}} & Alternativas condicionales\\
+      \color{violetaT}{\rule{5mm}{2mm}} & Repeticiones\\
+      \color{grisT}{\rule{5mm}{2mm}} & Notas y reglas\\
+    \end{tabular}
+    }
+    \vspace{2mm}
+
+    {\footnotesize\sffamily\color{grisT}
+      Reglas de oro: primitivas escritas tal cual las da el programa; verbos en infinitivo; no anidar \texttt{Si} ni \texttt{Repetir}.
+    }
+  \end{minipage}
+\end{center}
+
+\vspace{2mm}
+\begin{center}
+  {\footnotesize\sffamily\color{grisT}
+  Fuentes: \texttt{NOTACION.md} (pseudocódigo estilo apuntes ILyPC, Alan Rodas Bonjour, UNAHUR) --- \textit{Introducción al Pensamiento Computacional} (Bordignon e Iglesias, UNLP/EDUCAR). El libro \textit{Introducción a la Lógica y Problemas Computacionales} no está en el material consultado.
+  }
+\end{center}
+
+\end{document}

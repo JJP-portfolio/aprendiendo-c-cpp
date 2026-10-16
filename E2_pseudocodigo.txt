@@ -1,0 +1,34 @@
+E2 — Verificador de tautologías
+=================================
+
+📖 Lógica: Tautología (fórmula siempre verdadera)
+📝 Consigna:
+
+Escribí un algoritmo en pseudocódigo que determine si una fórmula
+es tautología (V para todas las combinaciones de sus variables).
+
+La fórmula a evaluar es:
+
+    F = (p ∧ ¬q) → (r ∨ q)
+
+Entrada: ninguna (se generan todas las combinaciones internamente)
+Salida: "Es tautologia" o "No es tautologia"
+
+💡 Pistas:
+- Inicializá un flag esTautologia = V
+- Generá todas las combinaciones de p, q, r con 3 ciclos anidados
+- Dentro del ciclo más interno, evaluá F
+- Si F = F para alguna combinación, cambá el flag a F
+- Al final, mostrá el resultado según el flag
+
+✏️ Resolución:
+
+INICIO
+    esTautologia = V
+    // COMPLETAR
+    SI esTautologia = V ENTONCES
+        mostrar "Es tautologia"
+    SINO
+        mostrar "No es tautologia"
+    FIN SI
+FIN

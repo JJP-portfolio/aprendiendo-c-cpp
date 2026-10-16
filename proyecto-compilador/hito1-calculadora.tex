@@ -1,0 +1,106 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows}
+\pagecolor{black!85!white}
+\color{white}
+
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[section]
+
+\title{Hito 0 - Automatas finitos: enteros positivos}
+\author{Jonathan Javier Pietracci}
+\begin{document}
+
+\section{Gramática de expresiones y el parser}
+
+Para construir una calculadora necestamos reconocer expresiones como \texttt{2 + 3 * 4} o \texttt{(8-3) * 2}.
+Esto requiere dos cosas: una \emph{gramática} que defina qué expresiones son válidas y un \emph{parser} que verifique si una cadena de tokes la satisface.
+
+\subsection{Gramática ambigua(por qué no sirve?)}
+
+La gramática ''obvia'' para expresiones es:
+
+\begin{center}
+\begin{tabular}{l}
+    $E \to E + E$ \\
+    $E \to E * E$ \\
+    $E \to E$ \\
+    $E to \text{número}$ \\
+\end{tabular}
+\end{center}
+
+Esta gramática es \emph{ambigua}: existen cadenas con más de un árbol de derivación. Para \texttt{2 + 3 * 4} hay dos árboles posibles:
+
+\begin{center}
+\shorthandoff{<>}
+\begin{tikzpicture}
+    every node/.style={draw,circle,minimum size=0.7cm}
+    \node{+}
+     child { node {2} }
+     child { node {$\times$} }
+        child { node {3} }
+        child { node {4} };
+\end{tikzpicture}
+\qquad\quad
+\begin{tizkpicture}[level distance=1.2cm], sibling distance=1.5cm,
+    every node/.style={draw,circle,minimum size=0.7cm}
+\node {$times}
+    child { node {+}
+        child { node {2} }
+        child { node {3} } }
+    child { node {4} };
+\end{tikzpicture}
+\shorthandon{<>}
+\end{center}
+
+El de la izquierda evalúa $2 + (3 \times 4) = 14$ \\
+El de la derecha evalúa $(2+3) \times 4 = 20$
+
+Un compilador no puede elegir entre 2 árboles: necesitamos una gramática que produzca \emph{exactamente uno}.
+
+\subsection{Gramática desambiguada (tres niveles)}
+
+La solución es separar la precedencia en niveles de  no-terminales.
+Cada nivel maneja una precedencia distinta, de menor (arriba) a mayor (abajo):
+
+\begin{center}
+\begin{tabular}{lll}
+    \toprule
+    Nivel & Reglas & Operadores \\
+    \midrule
+    $E$ (Expresión) & $E \to E + T \mid E - T \mid T$ & $+$ y $-$ \\
+    $T$ (Término)   & $T \to T * F \mid T / F \mid F$ & $*$ y $/$ \\
+    $F$ (Factor)    & $F \to (E) \mid \text{número}$  & paréntesis y números \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+La regla de oro: \textbf{cada nivel solo llama al nivel de abajo}. $E$ llama a $T$, $T$ llama a $F$, y $F$ llama a $E$ (solo para $\to$ multiplicación $\to$ suma.)
+
+\subsection{Precedencia y asociatividad}
+
+\begin{definicion}
+La \textbf{asociatividad} determina el orden entre operadores de igual proecedencia. Si $E \to E + T$, el $E$ está a la izquierda, lo que fuerza asociatividad izquierda:
+$(2 + 3) + 4$.
+\end{definicion}
+
+\begin{definicion}
+    La \textbf{asociatividad} determina el orden entre operadores de igual precedencia. Si $E \to E + T$, el $E$ está
+    a la izquierda, lo que fuerza asociatividad izquierda:
+    $2 + 3 + 4$ se evalua como $(2 + 3) + 4$.
+\end{definicion}
+
+
+\subsection{Derivación de \texttt{2 + 3 * 4}}
+
+Con la gramática desambiguada, la cadena \texttt{2 + 3 * 4} tiene una única derivación:
+
+
+\end{document}

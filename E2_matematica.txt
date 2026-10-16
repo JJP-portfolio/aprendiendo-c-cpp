@@ -1,0 +1,29 @@
+E2 — Tabla de verdad completa
+==============================
+
+📐 MPI: Tablas de verdad
+📝 Consigna:
+
+Completá la tabla de verdad para la fórmula:
+
+    (p ∧ ¬q) → (r ∨ q)
+
+Agregá columnas auxiliares para cada subfórmula.
+Son 8 filas (p, q, r ∈ {V, F}).
+
+p | q | r | ¬q | p∧¬q | r∨q | (p∧¬q)→(r∨q)
+--|---|---|----|------|-----|-------------
+V | V | V |   |      |     |
+V | V | F |   |      |     |
+V | F | V |   |      |     |
+V | F | F |   |      |     |
+F | V | V |   |      |     |
+F | V | F |   |      |     |
+F | F | V |   |      |     |
+F | F | F |   |      |     |
+
+💡 Recordá:
+    ¬q  = V si q = F
+    p∧¬q = V solo si p = V Y ¬q = V
+    r∨q  = V si r = V O q = V
+    →    = F solo cuando el antecedente es V y el consecuente es F
